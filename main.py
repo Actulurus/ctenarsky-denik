@@ -9,7 +9,9 @@ file_path = os.path.abspath(os.path.dirname(__file__))
 
 if not os.path.exists(os.path.join(file_path, '.env')):
     with open(os.path.join(file_path, ".env"), 'w') as f:
-        f.write("""STUCKINVIM_KEY=YOUR_KEY_HERE
+        f.write("""SERVER_KEY=YOUR_KEY_HERE
+SERVER_URL='http://getkey.stuckinvim.com/api/data?api_key='
+OPENAI_KEY=YOUR_KEY_HERE_only_use_this_if_you_dont_have_a_server_key
 TESTMODE=false""")
 
         print("Missing .env file, created one for you.")
@@ -18,20 +20,25 @@ TESTMODE=false""")
 
 dotenv.load_dotenv()
 
-STUCKINVIM_KEY = os.getenv("STUCKINVIM_KEY")
+SERVER_URL = os.getenv("SERVER_URL")
+SERVER_KEY = os.getenv("SERVER_KEY")
+OPENAI_KEY = os.getenv("OPENAI_KEY")
 
-if not STUCKINVIM_KEY:
-    print("Missing API key. Please set the STUCKINVIM_KEY environment variable.")
+if not SERVER_KEY and not OPENAI_KEY:
+    print("Missing API key. Please set the SERVER_KEY or OPENAI_KEY environment variable.")
     exit(1)
 
-API_KEY = None
+API_KEY = OPENAI_KEY
 
-result = requests.get("http://getkey.stuckinvim.com/api/data?api_key=" + STUCKINVIM_KEY).json()
+if not API_KEY and SERVER_URL:
+    result = requests.get(SERVER_URL + SERVER_KEY).json()
 
-if result.get("status") == "200":
-    API_KEY = result["key"]
-else:
-    raise Exception("Failed to get API key from StuckInVim API.")
+    if result.get("status") == "200":
+        API_KEY = result["key"]
+    else:
+        raise Exception("Failed to get API key from server api API.")
+elif not API_KEY and not SERVER_URL:
+    raise Exception("Missing server URL.")
 
 if not os.path.exists(os.path.join(file_path, "output")):
     os.mkdir(os.path.join(file_path, "output"))
