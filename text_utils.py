@@ -57,8 +57,3 @@ def extract_links(filters=[]):
                                 break
 
     return links
-
-if __name__ == "__main__":
-    # test: filters are not case sensitive and work with partial matches. unlimited amount of filters can be used
-    # if there are no filters
-    print(extract_links())
