@@ -1,4 +1,4 @@
-import requests
+import requests, docx
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.edufix.cz"
@@ -57,3 +57,26 @@ def extract_links(filters=[]):
                                 break
 
     return links
+
+def format_docx(doc=None, path=None):
+    if path:
+        doc = docx.Document(path)
+    elif not doc:
+        return
+    
+    newdoc = docx.Document()
+
+    for paragraph in doc.paragraphs:
+        for line in paragraph.text.split("\n"):
+            if line.strip().startswith("-"):
+                print("starts with -")
+                newdoc.add_paragraph("\t\t" + line.strip())
+            elif line.strip().startswith("o "):
+                newdoc.add_paragraph("\t\t\t" + line.strip())
+            else:
+                newdoc.add_paragraph(line.strip())
+
+    for p in newdoc.paragraphs:
+        print(p.text)
+
+    return newdoc

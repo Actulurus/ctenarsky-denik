@@ -64,13 +64,23 @@ def set_document_format(document, line_spacing=None, font_size=None, font_name=N
             paragraph.alignment = alignment
 
 def write_docx(text):
-    doc = docx.Document()
+    if not text:
+        return
+    
+    if type(text) == str:
+        doc = docx.Document()
 
-    doc.add_paragraph(text)
+        doc.add_paragraph(text)
+    else:
+        doc = text
+
     set_document_format(doc, line_spacing=1.15, font_size=12, font_name='Times New Roman')
 
+    # remove any special characters from the first line
+    doc.paragraphs[0].text = doc.paragraphs[0].text.replace(":", "").replace("?", "").replace("!", "").replace("$", "")
+
     newline = "\n"
-    doc.save(os.path.join(file_path, "output", f"{text.split(newline)[0]}.docx"))
+    doc.save(os.path.join(file_path, "output", f"{doc.paragraphs[0].text.split(newline)[0]}.docx"))
 
 def run(filters=[]):
     links = text_utils.extract_links(filters=filters)
@@ -100,5 +110,9 @@ if __name__ == "__main__":
     filters = []
     if len(sys.argv) > 1:
         filters = sys.argv[1:]
-    
+
     run(filters=filters)
+
+    # for old in os.listdir(os.path.join(file_path, "output")):
+    #     new = text_utils.format_docx(path="output/"+old)
+    #     write_docx(new)
